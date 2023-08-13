@@ -19,12 +19,13 @@ set "FirstSize=small"
 set "MaxSize=small"
 set "FirstGamemode=DOM"
 set "FirstMap=Azagor"
+set "Region=US_Central"
 
-set "battlebit_args=-batchmode -nographics -startserver -Name=%Name% -Password=%Password% -AntiCheat=%AntiCheat% -Hz=%Hz% -Port=%Port% -MaxPing=%MaxPing% -LocalIP=%LocalIP% -VoxelMode=%VoxelMode% -ConfigPath=%ConfigPath% -ApiEndpoint=%ApiEndpoint% -FixedSize=%FixedSize% -FirstSize=%FirstSize% -MaxSize=%MaxSize% -FirstGamemode=%FirstGamemode% -FirstMap=%FirstMap%"
+set "battlebit_args=-batchmode -nographics -startserver -Name=%Name% -Password=%Password% -AntiCheat=%AntiCheat% -Hz=%Hz% -Port=%Port% -MaxPing=%MaxPing% -LocalIP=%LocalIP% -VoxelMode=%VoxelMode% -ConfigPath=%ConfigPath% -ApiEndpoint=%ApiEndpoint% -FixedSize=%FixedSize% -FirstSize=%FirstSize% -MaxSize=%MaxSize% -FirstGamemode=%FirstGamemode% -FirstMap=%FirstMap%" -Region=%Region%
 
 echo Launching the BattleBit game server...
 
 rem Start the BattleBit game server
-Start "" ".\BattleBit\BattleBit.exe" %battlebit_args%
+Start "" "C:\Program Files (x86)\Steam\steamapps\common\BattleBit Remastered\BattleBit.exe" %battlebit_args%
 
 endlocal
