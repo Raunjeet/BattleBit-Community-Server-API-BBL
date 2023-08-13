@@ -1,16 +1,7 @@
 ﻿using BattleBitAPI;
 using BattleBitAPI.Common;
 using BattleBitAPI.Server;
-using BattleBitAPI.Storage;
-using System.Net;
-using System.Net.Mail;
-using System.Numerics;
-using System.Threading;
-using System.Threading.Channels;
-using System.Xml;
-using System.Xml.Linq;
-using static System.Net.WebRequestMethods;
-using Attachment = BattleBitAPI.Common.Attachment;
+
 
 class Program
 {
