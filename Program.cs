@@ -1,8 +1,16 @@
 ﻿using BattleBitAPI;
 using BattleBitAPI.Common;
 using BattleBitAPI.Server;
+using BattleBitAPI.Storage;
+using System.Net;
+using System.Net.Mail;
+using System.Numerics;
+using System.Threading;
 using System.Threading.Channels;
 using System.Xml;
+using System.Xml.Linq;
+using static System.Net.WebRequestMethods;
+using Attachment = BattleBitAPI.Common.Attachment;
 
 class Program
 {
@@ -13,93 +21,129 @@ class Program
 
         Thread.Sleep(-1);
     }
+
 }
 class MyPlayer : Player<MyPlayer>
 {
-    public bool IsZombie;
+
 }
 class MyGameServer : GameServer<MyPlayer>
 {
+    public List<ulong> temporaryWhiteList = new List<ulong>()
+    {
+        76561198071790300,
+    };
+    public List<string> temporaryLoadoutBanList = new List<string>
+    { 
+        //weapons
+        "Kriss Vector",
+        "FAL",
+        "ScorpionEVO",
+
+        //gadgets
+        "C4",
+        "Claymore",
+        "AntiPersonnelMine",
+        "Rpg7HeatExplosive",
+        "RiotShield",
+        "Rpg7 Pgo7 Tandem",
+        "Rpg7 Pgo7 Heat Explosive",
+        "Rpg7 Pgo7 Fragmentation",
+        "Rpg7 Fragmentation",
+        "SuicideC4",
+    };
+
+
+    public List<Attachment> temporaryLoadoutAttachmentBanList = new List<Attachment>()
+    {
+
+    };
+
+
 
     public override async Task OnRoundStarted()
     {
+
     }
     public override async Task OnRoundEnded()
     {
+
     }
 
     public override async Task OnPlayerConnected(MyPlayer player)
     {
-        bool anyZombiePlayer = false;
-        foreach (var item in AllPlayers)
+        if (await checkIfPlayerIsOnWhiteList(player) == false)
         {
-            if (item.IsZombie)
-            {
-                anyZombiePlayer = true;
-                break;
-            }
-        }
-
-        if (!anyZombiePlayer)
-        {
-            player.IsZombie = true;
-            player.Message("You are the zombie.");
-            player.Kill();
+            player.Kick("You are not a whitelisted player for this match.");
         }
     }
 
-    public override async Task OnAPlayerKilledAnotherPlayer(OnPlayerKillArguments<MyPlayer> args)
-    {
-        if (args.Victim.IsZombie)
-        {
-            args.Victim.IsZombie = false;
-            args.Victim.Message("You are no longer zombie");
-
-            AnnounceShort("Choosing new zombie in 5");
-            await Task.Delay(1000);
-            AnnounceShort("Choosing new zombie in 4");
-            await Task.Delay(1000);
-            AnnounceShort("Choosing new zombie in 3");
-            await Task.Delay(1000);
-            AnnounceShort("Choosing new zombie in 2");
-            await Task.Delay(1000);
-            AnnounceShort("Choosing new zombie in 1");
-            await Task.Delay(1000);
-
-            args.Killer.IsZombie = true;
-            args.Killer.SetHeavyGadget(Gadgets.SledgeHammer.ToString(), 0, true);
-
-            var position = args.Killer.GetPosition();
-        }
-    }
-
-
-    public override async Task<OnPlayerSpawnArguments> OnPlayerSpawning(MyPlayer player, OnPlayerSpawnArguments request)
-    {
-        if (player.IsZombie)
-        {
-            request.Loadout.PrimaryWeapon = default;
-            request.Loadout.SecondaryWeapon = default;
-            request.Loadout.LightGadget = null;
-            request.Loadout.HeavyGadget = Gadgets.SledgeHammer;
-            request.Loadout.Throwable = null;
-        }
-
-        return request;
-    }
     public override async Task OnPlayerSpawned(MyPlayer player)
     {
-        if(player.IsZombie)
+        if (await checkIfPlayerLoadoutIsLegal(player, temporaryLoadoutBanList) == false)
         {
-            player.SetRunningSpeedMultiplier(2f);
-            player.SetJumpMultiplier(2f);
-            player.SetFallDamageMultiplier(0f);
-            player.SetReceiveDamageMultiplier(0.1f);
-            player.SetGiveDamageMultiplier(4f);
+            player.Kill();
+            player.WarnPlayer("You have an illegal loadout. You have been force killed.");
         }
     }
 
+    public async Task<bool> checkIfPlayerIsOnWhiteList(MyPlayer player)
+    {
+        if (temporaryWhiteList.Contains(player.SteamID))
+        {
+            return true;
+        }
+        return false;
+    }
 
+    public async Task<bool> checkIfPlayerLoadoutIsLegal(MyPlayer player, List<String> allowedWeaponsList)
+    {
+
+        //Weapons Check
+        if (allowedWeaponsList.Contains(player.CurrentLoadout.PrimaryWeapon.ToString()))
+        {
+            return false;
+        }
+
+        if (allowedWeaponsList.Contains(player.CurrentLoadout.SecondaryWeapon.ToString()))
+        {
+            return false;
+        }
+
+        //Gadgets Check
+        if (allowedWeaponsList.Contains(player.CurrentLoadout.HeavyGadgetName))
+        {
+            return false;
+        }
+
+        if (allowedWeaponsList.Contains(player.CurrentLoadout.LightGadgetName))
+        {
+            return false;
+        }
+
+        //Throwables Check
+        if (allowedWeaponsList.Contains(player.CurrentLoadout.ThrowableName))
+        {
+            return false;
+        }
+
+        //Attachments Check, WIP
+        foreach (Attachment theAttachment in temporaryLoadoutAttachmentBanList)
+        {
+            if (player.CurrentLoadout.PrimaryWeapon.HasAttachment(theAttachment))
+            {
+                return false;
+            }
+
+            if (player.CurrentLoadout.SecondaryWeapon.HasAttachment(theAttachment))
+            {
+                return false;
+            }
+
+        }
+
+        return true;
+    }
 
     public override async Task OnConnected()
     {
@@ -110,4 +154,5 @@ class MyGameServer : GameServer<MyPlayer>
     {
         await Console.Out.WriteLineAsync("State changed to -> " + newState);
     }
+
 }
