@@ -44,6 +44,19 @@ class MyGameServer : GameServer<MyPlayer>
         "SuicideC4",
     };
 
+    public bool enforceSpecificLoadout = false;
+
+    public async Task forceTeamSwapOn64List(List<ulong> playerListTeamA, List<ulong> playerListTeamB)
+    {
+        //get list of all players in server steam 64
+
+        //loop through list
+
+        //if current player belongs to team a
+            //set team a
+        //else set team b
+    }
+
 
     public List<Attachment> temporaryLoadoutAttachmentBanList = new List<Attachment>()
     {
@@ -58,7 +71,7 @@ class MyGameServer : GameServer<MyPlayer>
     }
     public override async Task OnRoundEnded()
     {
-
+        
     }
 
     public override async Task OnPlayerConnected(MyPlayer player)
@@ -71,6 +84,11 @@ class MyGameServer : GameServer<MyPlayer>
 
     public override async Task OnPlayerSpawned(MyPlayer player)
     {
+        if(enforceSpecificLoadout)
+        {
+
+        }
+
         if (await checkIfPlayerLoadoutIsLegal(player, temporaryLoadoutBanList) == false)
         {
             player.Kill();
@@ -135,6 +153,8 @@ class MyGameServer : GameServer<MyPlayer>
 
         return true;
     }
+
+    
 
     public override async Task OnConnected()
     {
