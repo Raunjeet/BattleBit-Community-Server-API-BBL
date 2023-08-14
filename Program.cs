@@ -7,9 +7,10 @@ class Program
 {
     static void Main(string[] args)
     {
+        int listeningPort = 29294;
         var listener = new ServerListener<MyPlayer, MyGameServer>();
-        listener.Start(29294);
-
+        listener.Start(listeningPort);
+        Console.Out.WriteLineAsync("Server API Started. Listening on port: " + listeningPort);
         Thread.Sleep(-1);
     }
 
@@ -53,7 +54,7 @@ class MyGameServer : GameServer<MyPlayer>
         //loop through list
 
         //if current player belongs to team a
-            //set team a
+        //set team a
         //else set team b
     }
 
@@ -71,7 +72,7 @@ class MyGameServer : GameServer<MyPlayer>
     }
     public override async Task OnRoundEnded()
     {
-        
+
     }
 
     public override async Task OnPlayerConnected(MyPlayer player)
@@ -84,7 +85,7 @@ class MyGameServer : GameServer<MyPlayer>
 
     public override async Task OnPlayerSpawned(MyPlayer player)
     {
-        if(enforceSpecificLoadout)
+        if (enforceSpecificLoadout)
         {
 
         }
@@ -154,7 +155,7 @@ class MyGameServer : GameServer<MyPlayer>
         return true;
     }
 
-    
+
 
     public override async Task OnConnected()
     {
