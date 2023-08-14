@@ -1,0 +1,1 @@
+call app_update 671860 -beta community-testing
