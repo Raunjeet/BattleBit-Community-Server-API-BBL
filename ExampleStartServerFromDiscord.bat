@@ -25,6 +25,6 @@ set "battlebit_args=-batchmode -nographics -startserver -Name=%Name% -Password=%
 echo Launching the BattleBit game server...
 
 rem Start the BattleBit game server
-Start "" "C:\Program Files (x86)\Steam\steamapps\common\BattleBit Remastered\BattleBit.exe" %battlebit_args%
+Start "" "C:\BattleBit\BattleBit.exe" %battlebit_args%
 
 endlocal
