@@ -1,5 +1,5 @@
 ﻿using BattleBitAPI.Common;
-using CommunityServerAPI.BattleBitAPI.Server;
+using CommunityServerAPI.BattleBitAPI;
 
 namespace BattleBitAPI.Server
 {

@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using CommunityServerAPI.BattleBitAPI.Server;
+using CommunityServerAPI.BattleBitAPI;
 
 namespace BattleBitAPI.Common
 {
