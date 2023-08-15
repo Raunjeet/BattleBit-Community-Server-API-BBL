@@ -19,8 +19,9 @@ set "MaxSize=small"
 set "FirstGamemode=TDM"
 set "FirstMap=Azagor"
 set "Region=Europe_Central"
+set "apiendpoint=127.0.0.1:29294"
 
-set "battlebit_args=-batchmode -nographics -startserver -Name=%Name% -Password=%Password% -AntiCheat=%AntiCheat% -Hz=%Hz% -Port=%Port% -MaxPing=%MaxPing% -LocalIP=%LocalIP% -VoxelMode=%VoxelMode% -ConfigPath=%ConfigPath% -FixedSize=%FixedSize% -FirstSize=%FirstSize% -MaxSize=%MaxSize% -FirstGamemode=%FirstGamemode% -FirstMap=%FirstMap% -Region=%Region%"
+set "battlebit_args=-batchmode -apiendpoint=%apiendpoint=% -nographics -startserver -Name=%Name% -Password=%Password% -AntiCheat=%AntiCheat% -Hz=%Hz% -Port=%Port% -MaxPing=%MaxPing% -LocalIP=%LocalIP% -VoxelMode=%VoxelMode% -ConfigPath=%ConfigPath% -FixedSize=%FixedSize% -FirstSize=%FirstSize% -MaxSize=%MaxSize% -FirstGamemode=%FirstGamemode% -FirstMap=%FirstMap% -Region=%Region%"
 
 echo Launching the BattleBit game server...
 
