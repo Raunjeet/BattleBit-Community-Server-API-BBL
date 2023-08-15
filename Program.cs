@@ -27,6 +27,8 @@ class Program
         Console.Out.WriteLineAsync("Server API Started. Listening on port: " + listeningPort);
         Thread.Sleep(-1);
     }
+
+
 }
 class MyPlayer : Player<MyPlayer>
 {
@@ -94,11 +96,10 @@ class MyGameServer : GameServer<MyPlayer>
     public override async Task OnRoundEnded()
     {
         //send data to webserver
-
     }
-
     public override async Task OnPlayerConnected(MyPlayer player)
     {
+
         if (await checkIfPlayerIsOnWhiteList(player) == false)
         {
             player.Kick("You are not a whitelisted player for this match.");
@@ -130,7 +131,7 @@ class MyGameServer : GameServer<MyPlayer>
         return false;
     }
 
-    public async Task <bool> checkIfPlayerLoadoutIsLegal(MyPlayer player, List<String> bannedWeaponsList, List<Attachment> theAttachmentList)
+    public async Task<bool> checkIfPlayerLoadoutIsLegal(MyPlayer player, List<String> bannedWeaponsList, List<Attachment> theAttachmentList)
     {
 
         //Weapons Check
@@ -179,14 +180,21 @@ class MyGameServer : GameServer<MyPlayer>
         return true;
     }
 
-    public override async Task OnConnected()
+    public override async Task OnPlayerGivenUp(MyPlayer player)
     {
-        await Console.Out.WriteLineAsync("Current state: " + RoundSettings.State);
-
+        await Console.Out.WriteLineAsync("Giveup: " + player);
     }
-    public override async Task OnGameStateChanged(GameState oldState, GameState newState)
+    public override async Task OnPlayerDied(MyPlayer player)
     {
-        await Console.Out.WriteLineAsync("State changed to -> " + newState);
+        await Console.Out.WriteLineAsync("Died: " + player);
+    }
+    public override async Task OnAPlayerRevivedAnotherPlayer(MyPlayer from, MyPlayer to)
+    {
+        await Console.Out.WriteLineAsync(from + " revived " + to);
+    }
+    public override async Task OnPlayerDisconnected(MyPlayer player)
+    {
+        await Console.Out.WriteLineAsync("Disconnected: " + player);
     }
 
 }
