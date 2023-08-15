@@ -120,7 +120,6 @@ namespace CommunityServerAPI
             // Step 2: Create the Tokenized JSON Data
 
 
-
             // Step 3: Send the Tokenized JSON Data to the Web Server
             using (var httpClient = new HttpClient())
             {

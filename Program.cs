@@ -10,21 +10,15 @@ class Program
 {
     static void Main(string[] args)
     {
-
         //Use var from secrets.json
         var config = new ConfigurationBuilder()
             .AddUserSecrets<Program>()
             .Build();
 
-
 #if DEBUG
         string testMessage = Console.ReadLine();
-
         Task task = HttpPacketSender.sendPostDataTest(testMessage, config["bbltestendpoint"]);
-
 #endif
-
-
 
         // Battlebit Server starts here
         int listeningPort = 29294;
@@ -33,7 +27,6 @@ class Program
         Console.Out.WriteLineAsync("Server API Started. Listening on port: " + listeningPort);
         Thread.Sleep(-1);
     }
-
 }
 class MyPlayer : Player<MyPlayer>
 {
@@ -43,17 +36,17 @@ class MyGameServer : GameServer<MyPlayer>
 {
     public List<ulong> temporaryWhiteList = new List<ulong>()
     {
-        76561198071790300,
+        76561198071340300,
     };
 
     public List<ulong> temporaryTeamA = new List<ulong>()
     {
-        76561198071790300,
+        76561198541790300,
     };
 
     public List<ulong> temporaryTeamB = new List<ulong>()
     {
-        76561198071790301,
+        76561198071790441,
     };
     public List<string> temporaryLoadoutBanList = new List<string>
     { 
@@ -80,8 +73,7 @@ class MyGameServer : GameServer<MyPlayer>
 
     };
 
-
-    public bool enforceSpecificLoadout = false;
+    private bool enforceSpecificLoadout = false;
 
     public async Task forceTeamSwapOn64List(List<ulong> playerListTeamA, List<ulong> playerListTeamB, MyPlayer player)
     {
@@ -186,8 +178,6 @@ class MyGameServer : GameServer<MyPlayer>
 
         return true;
     }
-
-
 
     public override async Task OnConnected()
     {
