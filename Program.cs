@@ -1,12 +1,32 @@
 ﻿using BattleBitAPI;
 using BattleBitAPI.Common;
 using BattleBitAPI.Server;
-
+using CommunityServerAPI;
+using Microsoft.Extensions.Configuration;
+using System.Net;
+using static System.Net.WebRequestMethods;
 
 class Program
 {
     static void Main(string[] args)
     {
+
+        //Use var from secrets.json
+        var config = new ConfigurationBuilder()
+            .AddUserSecrets<Program>()
+            .Build();
+
+
+#if DEBUG
+        string testMessage = Console.ReadLine();
+
+        Task task = HttpPacketSender.sendPostDataTest(testMessage, config["bbltestendpoint"]);
+
+#endif
+
+
+
+        // Battlebit Server starts here
         int listeningPort = 29294;
         var listener = new ServerListener<MyPlayer, MyGameServer>();
         listener.Start(listeningPort);
@@ -24,6 +44,16 @@ class MyGameServer : GameServer<MyPlayer>
     public List<ulong> temporaryWhiteList = new List<ulong>()
     {
         76561198071790300,
+    };
+
+    public List<ulong> temporaryTeamA = new List<ulong>()
+    {
+        76561198071790300,
+    };
+
+    public List<ulong> temporaryTeamB = new List<ulong>()
+    {
+        76561198071790301,
     };
     public List<string> temporaryLoadoutBanList = new List<string>
     { 
@@ -45,26 +75,25 @@ class MyGameServer : GameServer<MyPlayer>
         "SuicideC4",
     };
 
-    public bool enforceSpecificLoadout = false;
-
-    public async Task forceTeamSwapOn64List(List<ulong> playerListTeamA, List<ulong> playerListTeamB)
-    {
-        //get list of all players in server steam 64
-
-        //loop through list
-
-        //if current player belongs to team a
-        //set team a
-        //else set team b
-    }
-
-
     public List<Attachment> temporaryLoadoutAttachmentBanList = new List<Attachment>()
     {
 
     };
 
 
+    public bool enforceSpecificLoadout = false;
+
+    public async Task forceTeamSwapOn64List(List<ulong> playerListTeamA, List<ulong> playerListTeamB, MyPlayer player)
+    {
+        if (playerListTeamA.Contains(player.SteamID))
+        {
+            player.Team = Team.TeamA;
+        }
+        else if (playerListTeamB.Contains(player.SteamID))
+        {
+            player.Team = Team.TeamB;
+        }
+    }
 
     public override async Task OnRoundStarted()
     {
@@ -72,6 +101,7 @@ class MyGameServer : GameServer<MyPlayer>
     }
     public override async Task OnRoundEnded()
     {
+        //send data to webserver
 
     }
 
@@ -81,6 +111,8 @@ class MyGameServer : GameServer<MyPlayer>
         {
             player.Kick("You are not a whitelisted player for this match.");
         }
+
+        await forceTeamSwapOn64List(temporaryTeamA, temporaryTeamB, player);
     }
 
     public override async Task OnPlayerSpawned(MyPlayer player)
@@ -90,7 +122,7 @@ class MyGameServer : GameServer<MyPlayer>
 
         }
 
-        if (await checkIfPlayerLoadoutIsLegal(player, temporaryLoadoutBanList) == false)
+        if (await checkIfPlayerLoadoutIsLegal(player, temporaryLoadoutBanList, temporaryLoadoutAttachmentBanList) == false)
         {
             player.Kill();
             player.WarnPlayer("You have an illegal loadout. You have been force killed.");
@@ -106,39 +138,39 @@ class MyGameServer : GameServer<MyPlayer>
         return false;
     }
 
-    public async Task<bool> checkIfPlayerLoadoutIsLegal(MyPlayer player, List<String> allowedWeaponsList)
+    public async Task <bool> checkIfPlayerLoadoutIsLegal(MyPlayer player, List<String> bannedWeaponsList, List<Attachment> theAttachmentList)
     {
 
         //Weapons Check
-        if (allowedWeaponsList.Contains(player.CurrentLoadout.PrimaryWeapon.ToString()))
+        if (bannedWeaponsList.Contains(player.CurrentLoadout.PrimaryWeapon.ToString()))
         {
             return false;
         }
 
-        if (allowedWeaponsList.Contains(player.CurrentLoadout.SecondaryWeapon.ToString()))
+        if (bannedWeaponsList.Contains(player.CurrentLoadout.SecondaryWeapon.ToString()))
         {
             return false;
         }
 
         //Gadgets Check
-        if (allowedWeaponsList.Contains(player.CurrentLoadout.HeavyGadgetName))
+        if (bannedWeaponsList.Contains(player.CurrentLoadout.HeavyGadgetName))
         {
             return false;
         }
 
-        if (allowedWeaponsList.Contains(player.CurrentLoadout.LightGadgetName))
+        if (bannedWeaponsList.Contains(player.CurrentLoadout.LightGadgetName))
         {
             return false;
         }
 
         //Throwables Check
-        if (allowedWeaponsList.Contains(player.CurrentLoadout.ThrowableName))
+        if (bannedWeaponsList.Contains(player.CurrentLoadout.ThrowableName))
         {
             return false;
         }
 
         //Attachments Check, WIP
-        foreach (Attachment theAttachment in temporaryLoadoutAttachmentBanList)
+        foreach (Attachment theAttachment in theAttachmentList)
         {
             if (player.CurrentLoadout.PrimaryWeapon.HasAttachment(theAttachment))
             {
