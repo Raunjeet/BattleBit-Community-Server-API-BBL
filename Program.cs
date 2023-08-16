@@ -3,8 +3,8 @@ using BattleBitAPI.Common;
 using BattleBitAPI.Server;
 using CommunityServerAPI;
 using Microsoft.Extensions.Configuration;
-using System.Net;
-using static System.Net.WebRequestMethods;
+using System;
+//using static System.Net.WebRequestMethods;
 
 class Program
 {
@@ -14,10 +14,10 @@ class Program
         var config = new ConfigurationBuilder()
             .AddUserSecrets<Program>()
             .Build();
-
+        
 #if DEBUG
-        string testMessage = Console.ReadLine();
-        Task task = HttpPacketSender.sendPostDataTest(testMessage, config["bbltestendpoint"]);
+        //string testMessage = Console.ReadLine();
+        //Task task = HttpPacketSender.sendPostDataTest(testMessage, config["bbltestendpoint"]);
 #endif
 
         // Battlebit Server starts here
@@ -25,6 +25,7 @@ class Program
         var listener = new ServerListener<MyPlayer, MyGameServer>();
         listener.Start(listeningPort);
         Console.Out.WriteLineAsync("Server API Started. Listening on port: " + listeningPort);
+        //RuleEnforcerUnitTest.RunUnitTest();
         Thread.Sleep(-1);
     }
 
@@ -32,63 +33,34 @@ class Program
 }
 class MyPlayer : Player<MyPlayer>
 {
+    public ulong playerRole;
+    public enum Roles : ulong
+    {
+        None = 0,
+
+        Admin = 1 << 0,
+        Moderator = 1 << 1,
+        Special = 1 << 2,
+        Vip = 1 << 3,
+        
+
+        Player = 1 << 4,
+        Referee = 1 << 5,
+    }
+   
+
 
 }
+
+
+
 class MyGameServer : GameServer<MyPlayer>
 {
-    public List<ulong> temporaryWhiteList = new List<ulong>()
+
+    public override async Task OnPlayerSpawned(MyPlayer player)
     {
-        76561198071340300,
-    };
-
-    public List<ulong> temporaryTeamA = new List<ulong>()
-    {
-        76561198541790300,
-    };
-
-    public List<ulong> temporaryTeamB = new List<ulong>()
-    {
-        76561198071790441,
-    };
-    public List<string> temporaryLoadoutBanList = new List<string>
-    { 
-        //weapons
-        "Kriss Vector",
-        "FAL",
-        "ScorpionEVO",
-
-        //gadgets
-        "C4",
-        "Claymore",
-        "AntiPersonnelMine",
-        "Rpg7HeatExplosive",
-        "RiotShield",
-        "Rpg7 Pgo7 Tandem",
-        "Rpg7 Pgo7 Heat Explosive",
-        "Rpg7 Pgo7 Fragmentation",
-        "Rpg7 Fragmentation",
-        "SuicideC4",
-    };
-
-    public List<Attachment> temporaryLoadoutAttachmentBanList = new List<Attachment>()
-    {
-
-    };
-
-    private bool enforceSpecificLoadout = false;
-
-    public async Task forceTeamSwapOn64List(List<ulong> playerListTeamA, List<ulong> playerListTeamB, MyPlayer player)
-    {
-        if (playerListTeamA.Contains(player.SteamID))
-        {
-            player.Team = Team.TeamA;
-        }
-        else if (playerListTeamB.Contains(player.SteamID))
-        {
-            player.Team = Team.TeamB;
-        }
+        //await RuleEnforcer.EnforceGadgetBanList(player);
     }
-
     public override async Task OnRoundStarted()
     {
 
@@ -96,88 +68,6 @@ class MyGameServer : GameServer<MyPlayer>
     public override async Task OnRoundEnded()
     {
         //send data to webserver
-    }
-    public override async Task OnPlayerConnected(MyPlayer player)
-    {
-
-        if (await checkIfPlayerIsOnWhiteList(player) == false)
-        {
-            player.Kick("You are not a whitelisted player for this match.");
-        }
-
-        await forceTeamSwapOn64List(temporaryTeamA, temporaryTeamB, player);
-    }
-
-    public override async Task OnPlayerSpawned(MyPlayer player)
-    {
-        if (enforceSpecificLoadout)
-        {
-
-        }
-
-        if (await checkIfPlayerLoadoutIsLegal(player, temporaryLoadoutBanList, temporaryLoadoutAttachmentBanList) == false)
-        {
-            player.Kill();
-            player.WarnPlayer("You have an illegal loadout. You have been force killed.");
-        }
-    }
-
-    public async Task<bool> checkIfPlayerIsOnWhiteList(MyPlayer player)
-    {
-        if (temporaryWhiteList.Contains(player.SteamID))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    public async Task<bool> checkIfPlayerLoadoutIsLegal(MyPlayer player, List<String> bannedWeaponsList, List<Attachment> theAttachmentList)
-    {
-
-        //Weapons Check
-        if (bannedWeaponsList.Contains(player.CurrentLoadout.PrimaryWeapon.ToString()))
-        {
-            return false;
-        }
-
-        if (bannedWeaponsList.Contains(player.CurrentLoadout.SecondaryWeapon.ToString()))
-        {
-            return false;
-        }
-
-        //Gadgets Check
-        if (bannedWeaponsList.Contains(player.CurrentLoadout.HeavyGadgetName))
-        {
-            return false;
-        }
-
-        if (bannedWeaponsList.Contains(player.CurrentLoadout.LightGadgetName))
-        {
-            return false;
-        }
-
-        //Throwables Check
-        if (bannedWeaponsList.Contains(player.CurrentLoadout.ThrowableName))
-        {
-            return false;
-        }
-
-        //Attachments Check, WIP
-        foreach (Attachment theAttachment in theAttachmentList)
-        {
-            if (player.CurrentLoadout.PrimaryWeapon.HasAttachment(theAttachment))
-            {
-                return false;
-            }
-
-            if (player.CurrentLoadout.SecondaryWeapon.HasAttachment(theAttachment))
-            {
-                return false;
-            }
-
-        }
-
-        return true;
     }
 
     public override async Task OnPlayerGivenUp(MyPlayer player)
@@ -196,5 +86,6 @@ class MyGameServer : GameServer<MyPlayer>
     {
         await Console.Out.WriteLineAsync("Disconnected: " + player);
     }
-
 }
+
+
